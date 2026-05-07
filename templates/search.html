@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Search - Voter Management System{% endblock %}
+
+{% block header_title %}Smart Search{% endblock %}
+{% block breadcrumb %}Search Voters{% endblock %}
+
+{% block content %}
+<div class="search-page">
+    <div class="search-hero">
+        <div class="search-box-large">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="mainSearch" placeholder="Search by name, EPIC, house number, mobile..." autocomplete="off" value="{{ query }}">
+                <button id="clearSearch" class="clear-btn" style="display: {% if query %}block{% else %}none{% endif %}">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="search-filters">
+                <button class="filter-btn active" data-type="all">
+                    <i class="fas fa-globe"></i> All
+                </button>
+                <button class="filter-btn" data-type="name">
+                    <i class="fas fa-user"></i> Name
+                </button>
+                <button class="filter-btn" data-type="epic">
+                    <i class="fas fa-id-card"></i> EPIC
+                </button>
+                <button class="filter-btn" data-type="house">
+                    <i class="fas fa-home"></i> House No
+                </button>
+                <button class="filter-btn" data-type="mobile">
+                    <i class="fas fa-phone"></i> Mobile
+                </button>
+            </div>
+            
+            <div class="search-tips">
+                <small><i class="fas fa-lightbulb"></i> Tips: Use "house:7" or "age:60" for advanced search</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="results-section">
+        <div class="results-header">
+            <h3>
+                <i class="fas fa-list"></i> 
+                Search Results
+                <span id="resultCount" class="result-count">{{ results|length }} found</span>
+            </h3>
+            <div class="results-actions">
+                <button id="exportResultsBtn" class="btn-secondary">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+        
+        <div class="results-grid" id="resultsGrid">
+            {% for voter in results %}
+            <div class="voter-card" onclick="window.location.href='/voter/{{ voter.id }}'">
+                <div class="voter-card-header">
+                    <div class="voter-avatar-large">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="voter-basic-info">
+                        <h4>{{ voter.name }}</h4>
+                        <p class="voter-location">
+                            <i class="fas fa-map-marker-alt"></i> {{ voter.village or 'N/A' }}
+                        </p>
+                    </div>
+                    <div class="document-badge">
+                        <i class="fas fa-file-alt"></i> {{ voter.doc_count or 0 }} docs
+                    </div>
+                </div>
+                
+                <div class="voter-card-details">
+                    <div class="detail-item">
+                        <i class="fas fa-id-card"></i>
+                        <span>EPIC: {{ voter.epic or 'N/A' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-home"></i>
+                        <span>House: {{ voter.house_no or 'N/A' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-users"></i>
+                        <span>Relation: {{ voter.relation_name or 'N/A' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-venus-mars"></i>
+                        <span>{{ voter.gender or 'N/A' }}, Age {{ voter.age or 'N/A' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-phone"></i>
+                        <span>{{ voter.mobile or 'N/A' }}</span>
+                    </div>
+                </div>
+                
+                <div class="voter-card-footer">
+                    <button class="btn-view" onclick="event.stopPropagation(); showProfile({{ voter.id }})">
+                        View Full Profile <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state-large">
+                <i class="fas fa-search"></i>
+                <h3>No voters found</h3>
+                <p>Try searching by name, EPIC number, or house number</p>
+                <div class="example-searches">
+                    <small>Examples:</small>
+                    <button class="example-btn" onclick="searchExample('ram')">ram</button>
+                    <button class="example-btn" onclick="searchExample('house:7')">house:7</button>
+                    <button class="example-btn" onclick="searchExample('age:60')">age:60</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function searchExample(query) {
+        document.getElementById('mainSearch').value = query;
+        performSearch();
+    }
+    
+    function showProfile(voterId) {
+        window.location.href = `/voter/${voterId}`;
+    }
+</script>
+{% endblock %}

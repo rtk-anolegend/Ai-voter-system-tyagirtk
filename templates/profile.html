@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Voter Profile - {{ voter.name }}{% endblock %}
+
+{% block header_title %}Voter Profile{% endblock %}
+{% block breadcrumb %}Profile Details{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-grid">
+        <!-- Left Column: Voter Info -->
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user-circle fa-4x"></i>
+                </div>
+                <div class="profile-title">
+                    <h2>{{ voter.name }}</h2>
+                    <p class="voter-id">EPIC: {{ voter.epic or 'Not Available' }}</p>
+                    <span class="category-badge">{{ voter.category or 'General' }}</span>
+                </div>
+                <div class="profile-actions">
+                    <button class="icon-btn" onclick="editVoter()" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="icon-btn" onclick="openUploadModal({{ voter.id }})" title="Upload Document">
+                        <i class="fas fa-upload"></i>
+                    </button>
+                    <button class="icon-btn" onclick="printProfile()" title="Print">
+                        <i class="fas fa-print"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="profile-details">
+                <div class="detail-section">
+                    <h3><i class="fas fa-id-card"></i> Personal Information</h3>
+                    <div class="detail-grid">
+                        <div class="detail-row">
+                            <span class="label">Serial Number:</span>
+                            <span class="value">{{ voter.serial_no or 'N/A' }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Name:</span>
+                            <span class="value">{{ voter.name }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Name (Hindi):</span>
+                            <span class="value">{{ voter.name_hindi or 'N/A' }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Relation:</span>
+                            <span class="value">{{ voter.relation_type }} of {{ voter.relation_name or 'N/A' }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Age:</span>
+                            <span class="value">{{ voter.age or 'N/A' }} years</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Gender:</span>
+                            <span class="value">{{ voter.gender or 'N/A' }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Mobile:</span>
+                            <span class="value">{{ voter.mobile or 'N/A' }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Category:</span>
+                            <span class="value">{{ voter.category or 'General' }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3><i class="fas fa-home"></i> Address Information</h3>
+                    <div class="detail-grid">
+                        <div class="detail-row">
+                            <span class="label">House Number:</span>
+                            <span class="value">{{ voter.house_no or 'N/A' }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Village:</span>
+                            <span class="value">{{ voter.village or 'N/A' }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3><i class="fas fa-sticky-note"></i> Notes</h3>
+                    <div class="notes-content">
+                        {{ voter.notes or 'No additional notes available.' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column: Family & Documents -->
+        <div class="profile-sidebar">
+            <!-- Family Members -->
+            <div class="info-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-users"></i> Family Members</h3>
+                    <span class="badge">{{ family_members|length }} members</span>
+                </div>
+                <div class="family-list">
+                    {% for member in family_members %}
+                    <div class="family-member" onclick="window.location.href='/voter/{{ member.id }}'">
+                        <div class="member-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="member-info">
+                            <div class="member-name">{{ member.name }}</div>
+                            <div class="member-relation">{{ member.relation_name or 'Head' }}</div>
+                        </div>
+                        <div class="member-arrow">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="empty-state-small">
+                        <i class="fas fa-users"></i>
+                        <p>No family members found</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Documents -->
+            <div class="info-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-file-alt"></i> Documents</h3>
+                    <button class="btn-small" onclick="openUploadModal({{ voter.id }})">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+                <div class="document-list">
+                    {% for doc in documents %}
+                    <div class="document-item">
+                        <div class="doc-icon">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div class="doc-info">
+                            <div class="doc-name">{{ doc.doc_type|title }}</div>
+                            <div class="doc-date">{{ doc.uploaded_at[:19] }}</div>
+                        </div>
+                        <div class="doc-actions">
+                            <a href="{{ doc.file_path }}" target="_blank" class="doc-btn">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ doc.file_path }}" download class="doc-btn">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="empty-state-small">
+                        <i class="fas fa-file-alt"></i>
+                        <p>No documents uploaded</p>
+                        <button class="btn-secondary-small" onclick="openUploadModal({{ voter.id }})">
+                            Upload First Document
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentVoterId = {{ voter.id }};
+    
+    function openUploadModal(voterId) {
+        const modal = document.getElementById('uploadModal');
+        modal.style.display = 'block';
+        
+        const form = document.getElementById('uploadForm');
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            
+            const response = await fetch(`/upload_document/${voterId}`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Upload failed');
+            }
+        };
+    }
+    
+    function editVoter() {
+        alert('Edit functionality would open here');
+    }
+    
+    function printProfile() {
+        window.print();
+    }
+</script>
+{% endblock %}
