@@ -11,8 +11,24 @@
         <div class="search-box-large">
             <div class="search-input-wrapper">
                 <i class="fas fa-search"></i>
-                <input type="text" id="mainSearch" placeholder="Search by name, EPIC, house number, mobile..." autocomplete="off" value="{{ query }}">
-                <button id="clearSearch" class="clear-btn" style="display: {% if query %}block{% else %}none{% endif %}">
+                <input
+    type="text"
+    id="mainSearch"
+
+    placeholder="
+        Search by name,
+        EPIC,
+        house number,
+        mobile...
+    "
+
+    autocomplete="off"
+
+    spellcheck="false"
+
+    value="{{ query or '' }}"
+>
+                <button id="clearSearch" class="clear-btn" style="display: {% if query %}flex{% else %}none{% endif %}">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -46,7 +62,7 @@
             <h3>
                 <i class="fas fa-list"></i> 
                 Search Results
-                <span id="resultCount" class="result-count">{{ results|length }} found</span>
+                <span id="resultCount" class="result-count">{{ results|length if results else 0 }} found</span>
             </h3>
             <div class="results-actions">
                 <button id="exportResultsBtn" class="btn-secondary">

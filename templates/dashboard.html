@@ -1,198 +1,491 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - Voter Management System{% endblock %}
+{% block title %}Dashboard - Village Intelligence Portal{% endblock %}
 
 {% block header_title %}Dashboard{% endblock %}
-{% block breadcrumb %}Overview{% endblock %}
+{% block breadcrumb %}Village Intelligence Overview{% endblock %}
 
 {% block content %}
+
 <div class="dashboard">
-    <!-- Stats Cards -->
+
+    <!-- PREMIUM HERO SECTION -->
+
+    <div class="village-dashboard-banner">
+
+        <div class="banner-left">
+
+            <h2>
+                <i class="fas fa-satellite-dish"></i>
+                Village Intelligence Control Center
+            </h2>
+
+            <p>
+                AI-powered rural voter intelligence, family mapping, document management and smart analytics system for BABURA RAGHUNATH SINGH village network.
+            </p>
+
+        </div>
+
+        <div class="banner-right">
+
+            <div class="live-badge">
+                <span class="pulse-dot"></span>
+                SYSTEM ONLINE
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- QUICK INFO BAR -->
+
+    <div class="quick-info-grid">
+
+        <div class="quick-info-card">
+            <i class="fas fa-server"></i>
+            <div>
+                <strong>Raspberry Pi Server</strong>
+                <small>Connected & Running</small>
+            </div>
+        </div>
+
+        <div class="quick-info-card">
+            <i class="fas fa-network-wired"></i>
+            <div>
+                <strong>Village Network</strong>
+                <small>Local Intelligence Mode</small>
+            </div>
+        </div>
+
+        <div class="quick-info-card">
+            <i class="fas fa-user-shield"></i>
+            <div>
+                <strong>Admin Access</strong>
+                <small>Ritik Singh</small>
+            </div>
+        </div>
+
+        <div class="quick-info-card">
+            <i class="fas fa-phone-volume"></i>
+            <div>
+                <strong>Support Contact</strong>
+                <small>8953698232</small>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- STATS GRID -->
+
     <div class="stats-grid">
+
         <div class="stat-card">
             <div class="stat-icon">
                 <i class="fas fa-users"></i>
             </div>
+
             <div class="stat-info">
                 <h3>Total Voters</h3>
-                <div class="stat-value">{{ stats.total_voters }}</div>
+
+                <div class="stat-value">
+                    {{ stats.total_voters }}
+                </div>
+
                 <div class="stat-trend positive">
-                    <i class="fas fa-arrow-up"></i> +12%
+                    <i class="fas fa-arrow-up"></i>
+                    Active Database
                 </div>
             </div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-icon male">
                 <i class="fas fa-mars"></i>
             </div>
+
             <div class="stat-info">
                 <h3>Male Voters</h3>
-                <div class="stat-value">{{ stats.male_count }}</div>
-                <div class="stat-percent">{% if stats.total_voters > 0 %}{{ (stats.male_count / stats.total_voters * 100) | round(1) }}%{% else %}0%{% endif %}</div>
+
+                <div class="stat-value">
+                    {{ stats.male_count }}
+                </div>
+
+                <div class="stat-percent">
+                    {% if stats.total_voters > 0 %}
+                        {{ (stats.male_count / stats.total_voters * 100) | round(1) }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
             </div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-icon female">
                 <i class="fas fa-venus"></i>
             </div>
+
             <div class="stat-info">
                 <h3>Female Voters</h3>
-                <div class="stat-value">{{ stats.female_count }}</div>
-                <div class="stat-percent">{% if stats.total_voters > 0 %}{{ (stats.female_count / stats.total_voters * 100) | round(1) }}%{% else %}0%{% endif %}</div>
+
+                <div class="stat-value">
+                    {{ stats.female_count }}
+                </div>
+
+                <div class="stat-percent">
+                    {% if stats.total_voters > 0 %}
+                        {{ (stats.female_count / stats.total_voters * 100) | round(1) }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
             </div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-icon senior">
-                <i class="fas fa-user-graduate"></i>
+                <i class="fas fa-user-clock"></i>
             </div>
+
             <div class="stat-info">
                 <h3>Senior Citizens</h3>
-                <div class="stat-value">{{ stats.senior_count }}</div>
-                <div class="stat-label">Age 60+</div>
+
+                <div class="stat-value">
+                    {{ stats.senior_count }}
+                </div>
+
+                <div class="stat-label">
+                    Age 60+
+                </div>
             </div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-icon family">
                 <i class="fas fa-home"></i>
             </div>
+
             <div class="stat-info">
                 <h3>Families</h3>
-                <div class="stat-value">{{ stats.families_count }}</div>
-                <div class="stat-label">Total Households</div>
+
+                <div class="stat-value">
+                    {{ stats.families_count }}
+                </div>
+
+                <div class="stat-label">
+                    Total Households
+                </div>
             </div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-icon docs">
                 <i class="fas fa-file-alt"></i>
             </div>
+
             <div class="stat-info">
                 <h3>Documents</h3>
-                <div class="stat-value">{{ stats.doc_count }}</div>
-                <div class="stat-label">Uploaded Files</div>
+
+                <div class="stat-value">
+                    {{ stats.doc_count }}
+                </div>
+
+                <div class="stat-label">
+                    Uploaded Files
+                </div>
             </div>
         </div>
+
     </div>
-    
-    <!-- Charts Section -->
+
+    <!-- CHARTS SECTION -->
+
     <div class="charts-grid">
+
         <div class="chart-card">
+
             <div class="chart-header">
-                <h3>Age Distribution</h3>
-                <i class="fas fa-chart-line"></i>
+                <h3>
+                    <i class="fas fa-chart-line"></i>
+                    Age Distribution
+                </h3>
+
+                <span class="chart-tag">
+                    Rural Demographics
+                </span>
             </div>
+
             <div class="chart-body">
                 <canvas id="ageChart" width="400" height="300"></canvas>
             </div>
+
         </div>
-        
+
         <div class="chart-card">
+
             <div class="chart-header">
-                <h3>Gender Ratio</h3>
-                <i class="fas fa-chart-pie"></i>
+                <h3>
+                    <i class="fas fa-chart-pie"></i>
+                    Gender Ratio
+                </h3>
+
+                <span class="chart-tag">
+                    Live Analytics
+                </span>
             </div>
+
             <div class="chart-body">
                 <canvas id="genderChart" width="400" height="300"></canvas>
             </div>
+
         </div>
+
     </div>
-    
-    <!-- Recent Voters -->
+
+    <!-- RECENT VOTERS -->
+
     <div class="recent-section">
+
         <div class="section-header">
-            <h3><i class="fas fa-clock"></i> Recently Added Voters</h3>
-            <a href="{{ url_for('search') }}" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+
+            <h3>
+                <i class="fas fa-clock"></i>
+                Recently Added Voters
+            </h3>
+
+            <a href="{{ url_for('search') }}" class="view-all">
+                View All
+                <i class="fas fa-arrow-right"></i>
+            </a>
+
         </div>
-        
+
         <div class="voter-list">
+
             {% for voter in recent_voters %}
-            <div class="voter-list-item" onclick="showProfile({{ voter.id }})">
+
+            <div class="voter-list-item"
+                 onclick="showProfile({{ voter.id }})">
+
                 <div class="voter-avatar">
                     <i class="fas fa-user-circle"></i>
                 </div>
+
                 <div class="voter-info">
-                    <div class="voter-name">{{ voter.name }}</div>
-                    <div class="voter-details">
-                        <span><i class="fas fa-home"></i> {{ voter.house_no or 'N/A' }}</span>
-                        <span><i class="fas fa-venus-mars"></i> {{ voter.gender or 'N/A' }}</span>
-                        <span><i class="fas fa-calendar"></i> Age {{ voter.age or 'N/A' }}</span>
+
+                    <div class="voter-name">
+                        {{ voter.name }}
                     </div>
+
+                    <div class="voter-details">
+
+                        <span>
+                            <i class="fas fa-home"></i>
+                            {{ voter.house_no or 'N/A' }}
+                        </span>
+
+                        <span>
+                            <i class="fas fa-venus-mars"></i>
+                            {{ voter.gender or 'N/A' }}
+                        </span>
+
+                        <span>
+                            <i class="fas fa-calendar"></i>
+                            Age {{ voter.age or 'N/A' }}
+                        </span>
+
+                    </div>
+
                 </div>
+
                 <div class="voter-action">
                     <i class="fas fa-chevron-right"></i>
                 </div>
+
             </div>
+
             {% else %}
+
             <div class="empty-state">
+
                 <i class="fas fa-database"></i>
-                <p>No voters found. Import data to get started.</p>
+
+                <p>
+                    No voter records available.
+                </p>
+
+                <small>
+                    Import CSV data to initialize the village intelligence system.
+                </small>
+
             </div>
+
             {% endfor %}
+
         </div>
+
     </div>
+
 </div>
 
+<!-- CHART JS -->
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
-    // Age Distribution Chart
-    const ageCtx = document.getElementById('ageChart').getContext('2d');
-    const ageData = {{ age_distribution | tojson }};
-    
+
+    // AGE DISTRIBUTION
+
+    const ageCtx =
+        document.getElementById('ageChart')
+        .getContext('2d');
+
+    const ageData =
+        {{ age_distribution | tojson }};
+
     new Chart(ageCtx, {
+
         type: 'bar',
+
         data: {
-            labels: ageData.map(item => item.age_group),
+
+            labels:
+                ageData.map(
+                    item => item.age_group
+                ),
+
             datasets: [{
+
                 label: 'Number of Voters',
-                data: ageData.map(item => item.count),
-                backgroundColor: 'rgba(13, 143, 129, 0.8)',
-                borderColor: '#0D8F81',
+
+                data:
+                    ageData.map(
+                        item => item.count
+                    ),
+
+                backgroundColor:
+                    'rgba(13, 143, 129, 0.8)',
+
+                borderColor:
+                    '#14b8a6',
+
                 borderWidth: 1,
-                borderRadius: 10
+
+                borderRadius: 12
+
             }]
         },
+
         options: {
+
             responsive: true,
+
             maintainAspectRatio: true,
+
             plugins: {
+
                 legend: {
+
                     position: 'top',
+
+                    labels: {
+                        color: '#ffffff'
+                    }
+                }
+            },
+
+            scales: {
+
+                x: {
+
+                    ticks: {
+                        color: '#cbd5e1'
+                    },
+
+                    grid: {
+                        color: 'rgba(255,255,255,0.05)'
+                    }
+                },
+
+                y: {
+
+                    ticks: {
+                        color: '#cbd5e1'
+                    },
+
+                    grid: {
+                        color: 'rgba(255,255,255,0.05)'
+                    }
                 }
             }
         }
     });
-    
-    // Gender Ratio Chart
-    const genderCtx = document.getElementById('genderChart').getContext('2d');
-    const genderData = {{ gender_ratio | tojson }};
-    
+
+    // GENDER CHART
+
+    const genderCtx =
+        document.getElementById('genderChart')
+        .getContext('2d');
+
+    const genderData =
+        {{ gender_ratio | tojson }};
+
     new Chart(genderCtx, {
+
         type: 'doughnut',
+
         data: {
-            labels: genderData.map(item => item.gender),
+
+            labels:
+                genderData.map(
+                    item => item.gender
+                ),
+
             datasets: [{
-                data: genderData.map(item => item.count),
-                backgroundColor: ['#2196F3', '#E91E63', '#FF9800'],
+
+                data:
+                    genderData.map(
+                        item => item.count
+                    ),
+
+                backgroundColor: [
+                    '#2196F3',
+                    '#E91E63',
+                    '#14b8a6'
+                ],
+
                 borderWidth: 0
             }]
         },
+
         options: {
+
             responsive: true,
+
             maintainAspectRatio: true,
+
             plugins: {
+
                 legend: {
+
                     position: 'bottom',
+
+                    labels: {
+                        color: '#ffffff'
+                    }
                 }
             }
         }
     });
-    
+
+    // PROFILE REDIRECT
+
     function showProfile(voterId) {
-        window.location.href = `/voter/${voterId}`;
+
+        window.location.href =
+            `/voter/${voterId}`;
     }
+
 </script>
+
 {% endblock %}

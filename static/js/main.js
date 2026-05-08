@@ -1,18 +1,22 @@
 // Global variables
 let currentVoterId = null;
 let searchTimeout = null;
-
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
+    
     initializeMobileMenu();
+    
     initializeModals();
+    
     initializeExportImport();
+    
     initializeGlobalSearch();
+    
+    initializeProfileDropdown();
     
     // Add loading animation
     addLoadingAnimation();
 });
-
 // Mobile menu functionality
 function initializeMobileMenu() {
     const mobileToggle = document.getElementById('mobileMenuToggle');
@@ -108,9 +112,13 @@ function showExportOptions() {
     const closeBtn = modal.querySelector('.close');
     closeBtn.onclick = () => modal.remove();
     
-    window.onclick = (event) => {
-        if (event.target === modal) modal.remove();
-    };
+    modal.addEventListener('click', function(event) {
+    
+    if (event.target === modal) {
+        
+        modal.remove();
+    }
+});
 }
 
 function exportData(format) {
@@ -160,7 +168,11 @@ function showImportDialog() {
                 body: formData
             });
             
-            const result = await response.json();
+            if (!response.ok) {
+    throw new Error('Import request failed');
+}
+
+const result = await response.json();
             
             if (result.success) {
                 showNotification(`Successfully imported ${result.imported} records`, 'success');
@@ -177,14 +189,34 @@ function showImportDialog() {
     };
     
     const closeBtn = modal.querySelector('.close');
-    closeBtn.onclick = () => modal.remove();
+    closeBtn.onclick = () => {
+    modal.style.display = 'none';
+    
+    setTimeout(() => {
+        modal.remove();
+    }, 150);
+};
 }
 
 function backupDatabase() {
     window.location.href = '/backup';
     showNotification('Backup initiated', 'success');
 }
+function initializeProfileDropdown() {
 
+    const dropdown =
+        document.querySelector('.profile-dropdown');
+
+    if (!dropdown) return;
+
+    dropdown.addEventListener('click', function() {
+
+        showNotification(
+            'Admin Panel Active',
+            'info'
+        );
+    });
+}
 // Global search functionality
 function initializeGlobalSearch() {
     const searchInput = document.getElementById('globalSearch');
@@ -200,7 +232,9 @@ function initializeGlobalSearch() {
                     performLiveSearch(query, suggestionsDiv);
                 }, 300);
             } else {
-                suggestionsDiv.classList.remove('active');
+                if (suggestionsDiv) {
+    suggestionsDiv.classList.remove('active');
+}
             }
         });
         
@@ -217,9 +251,15 @@ function initializeGlobalSearch() {
 }
 
 async function performLiveSearch(query, suggestionsDiv) {
+        
+        if (!suggestionsDiv) return;
     try {
         const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-        const data = await response.json();
+        if (!response.ok) {
+    throw new Error('Request failed');
+}
+
+const data = await response.json();
         
         if (data.results && data.results.length > 0) {
             suggestionsDiv.innerHTML = `
@@ -229,7 +269,12 @@ async function performLiveSearch(query, suggestionsDiv) {
                             <i class="fas fa-user"></i>
                             <div>
                                 <strong>${escapeHtml(voter.name)}</strong>
-                                <small>${voter.house_no || 'No house'} | EPIC: ${voter.epic || 'N/A'}</small>
+                                <small>
+${escapeHtml(voter.house_no || 'No house')}
+|
+EPIC:
+${escapeHtml(voter.epic || 'N/A')}
+</small>
                             </div>
                         </div>
                     `).join('')}
@@ -306,36 +351,22 @@ function showNotification(message, type = 'info') {
 }
 
 function escapeHtml(text) {
+    
+    if (text === null || text === undefined) {
+        return '';
+    }
+    
     const div = document.createElement('div');
-    div.textContent = text;
+    
+    div.textContent = String(text);
+    
     return div.innerHTML;
 }
 
 function addLoadingAnimation() {
     const style = document.createElement('style');
     style.textContent = `
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        @keyframes slideOutRight {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-        }
-        
+      
         .loader {
             width: 50px;
             height: 50px;
@@ -401,29 +432,3 @@ function closeModal() {
     modals.forEach(modal => modal.remove());
 }
 
-// Add CSS animations to head
-const animationStyle = document.createElement('style');
-animationStyle.textContent = `
-    @keyframes slideInRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    
-    @keyframes slideOutRight {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(animationStyle);

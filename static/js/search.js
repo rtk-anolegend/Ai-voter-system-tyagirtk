@@ -1,205 +1,562 @@
-// Search page specific functionality
+// ================================
+// SEARCH PAGE FUNCTIONALITY
+// Fully Safe Frontend Version
+// No collision with main.js
+// Backend Safe
+// Flask Safe
+// ================================
+
+// ------------------------------
+// Global Variables
+// ------------------------------
 let currentSearchType = 'all';
 let searchDebounceTimer = null;
+let currentSearchController = null;
 
-document.addEventListener('DOMContentLoaded', function() {
+// ------------------------------
+// Initialize Search Page
+// ------------------------------
+document.addEventListener('DOMContentLoaded', function () {
+
     initializeSearchPage();
+
 });
 
-function initializeSearchPage() {
-    const mainSearch = document.getElementById('mainSearch');
-    const clearBtn = document.getElementById('clearSearch');
-    const filterBtns = document.querySelectorAll('.filter-btn');
+// ------------------------------
+// Safe Helper Functions
+// ------------------------------
+function searchEscapeHtml(text) {
+
+    if (text === null || text === undefined) {
+        return '';
+    }
+
+    const div = document.createElement('div');
+
+    div.textContent = String(text);
+
+    return div.innerHTML;
+}
+
+// ------------------------------
+// Loading Functions
+// ------------------------------
+function searchShowLoading() {
+
+    document.body.classList.add('search-loading');
+}
+
+function searchHideLoading() {
+
+    document.body.classList.remove('search-loading');
+}
+
+// ------------------------------
+// Notification Function
+// ------------------------------
+function searchShowNotification(message, type = 'info') {
     
+    if (typeof showNotification === 'function') {
+        
+        showNotification(message, type);
+        
+    } else {
+        
+        console.log(`[${type}] ${message}`);
+    }
+}
+
+// ------------------------------
+// Search Page Initialization
+// ------------------------------
+function initializeSearchPage() {
+
+    const mainSearch =
+        document.getElementById('mainSearch');
+
+    const clearBtn =
+        document.getElementById('clearSearch');
+
+    const filterBtns =
+        document.querySelectorAll('.filter-btn');
+
+    // --------------------------
+    // Main Search Input
+    // --------------------------
     if (mainSearch) {
-        // Live search as user types
-        mainSearch.addEventListener('input', function() {
+
+        // Live Search
+        mainSearch.addEventListener('input', function () {
+
             const query = this.value;
-            
+
+            // Show/Hide Clear Button
             if (clearBtn) {
-                clearBtn.style.display = query ? 'block' : 'none';
+
+                clearBtn.style.display =
+                    query ? 'flex' : 'none';
             }
-            
-            if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+
+            // Debounce Search
+            if (searchDebounceTimer) {
+
+                clearTimeout(searchDebounceTimer);
+            }
+
             searchDebounceTimer = setTimeout(() => {
+
                 performSearch();
+
             }, 500);
         });
-        
-        // Handle enter key
-        mainSearch.addEventListener('keypress', function(e) {
+
+        // Enter Key Search
+        mainSearch.addEventListener('keypress', function (e) {
+
             if (e.key === 'Enter') {
-                if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+
+                if (searchDebounceTimer) {
+
+                    clearTimeout(searchDebounceTimer);
+                }
+
                 performSearch();
             }
         });
     }
-    
-    // Filter buttons
+
+    // --------------------------
+    // Filter Buttons
+    // --------------------------
     filterBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            filterBtns.forEach(b => b.classList.remove('active'));
+
+        btn.addEventListener('click', function () {
+
+            filterBtns.forEach(b => {
+
+                b.classList.remove('active');
+            });
+
             this.classList.add('active');
-            currentSearchType = this.dataset.type;
+
+            currentSearchType =
+                this.dataset.type;
+
             performSearch();
         });
     });
-    
-    // Clear button
+
+    // --------------------------
+    // Clear Search Button
+    // --------------------------
     if (clearBtn) {
-        clearBtn.addEventListener('click', function() {
+
+        clearBtn.addEventListener('click', function () {
+
             if (mainSearch) {
+
                 mainSearch.value = '';
+
                 this.style.display = 'none';
+
                 performSearch();
             }
         });
     }
 }
 
+// ------------------------------
+// Main Search Function
+// ------------------------------
 async function performSearch() {
-    const searchInput = document.getElementById('mainSearch');
-    const query = searchInput ? searchInput.value.trim() : '';
-    
+
+    const searchInput =
+        document.getElementById('mainSearch');
+
+    const query = searchInput
+        ? searchInput.value.trim()
+        : '';
+
+    // --------------------------
+    // Empty Search State
+    // --------------------------
     if (!query) {
-        // Show empty state
-        const resultsGrid = document.getElementById('resultsGrid');
+
+        const resultsGrid =
+            document.getElementById('resultsGrid');
+
+        const resultCountSpan =
+            document.getElementById('resultCount');
+
+        if (resultCountSpan) {
+
+            resultCountSpan.textContent = '0 found';
+        }
+
         if (resultsGrid) {
+
             resultsGrid.innerHTML = `
                 <div class="empty-state-large">
+
                     <i class="fas fa-search"></i>
+
                     <h3>Start searching</h3>
-                    <p>Enter a name, EPIC number, or house number to find voters</p>
+
+                    <p>
+                        Enter a name,
+                        EPIC number,
+                        or house number
+                        to find voters
+                    </p>
+
                     <div class="example-searches">
-                        <small>Try these examples:</small>
-                        <button class="example-btn" onclick="searchExample('ram')">ram</button>
-                        <button class="example-btn" onclick="searchExample('house:7')">house:7</button>
-                        <button class="example-btn" onclick="searchExample('age:60')">age:60</button>
+
+                        <small>Try examples:</small>
+
+                        <button class="example-btn"
+                            onclick="searchExample('ram')">
+                            ram
+                        </button>
+
+                        <button class="example-btn"
+                            onclick="searchExample('house:7')">
+                            house:7
+                        </button>
+
+                        <button class="example-btn"
+                            onclick="searchExample('age:60')">
+                            age:60
+                        </button>
+
                     </div>
+
                 </div>
             `;
         }
+
         return;
     }
-    
-    showLoading();
-    
+
+    // --------------------------
+    // Prevent Tiny Queries
+    // --------------------------
+    if (query.length === 1) {
+
+        return;
+    }
+
+    // --------------------------
+    // Show Loader
+    // --------------------------
+    searchShowLoading();
+
     try {
-        const url = `/api/search?q=${encodeURIComponent(query)}&type=${currentSearchType}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        updateSearchResults(data.results, data.count);
+
+        // Cancel Previous Search
+        if (currentSearchController) {
+
+            currentSearchController.abort();
+        }
+
+        currentSearchController =
+            new AbortController();
+
+        const url =
+            `/api/search?q=${encodeURIComponent(query)}&type=${currentSearchType}`;
+
+        const response = await fetch(url, {
+
+            signal:
+                currentSearchController.signal
+        });
+
+        if (!response.ok) {
+
+            throw new Error('Search request failed');
+        }
+
+        const data =
+            await response.json();
+
+        updateSearchResults(
+
+            data.results || [],
+            data.count || 0
+        );
+
     } catch (error) {
+
+        // Ignore Abort Errors
+        if (error.name === 'AbortError') {
+
+            return;
+        }
+
         console.error('Search error:', error);
-        showNotification('Search failed. Please try again.', 'error');
+
+        searchShowNotification(
+
+            'Search failed. Please try again.',
+            'error'
+        );
+
     } finally {
-        hideLoading();
+
+        searchHideLoading();
     }
 }
 
+// ------------------------------
+// Update Search Results
+// ------------------------------
 function updateSearchResults(results, count) {
-    const resultsGrid = document.getElementById('resultsGrid');
-    const resultCountSpan = document.getElementById('resultCount');
-    
+
+    const resultsGrid =
+        document.getElementById('resultsGrid');
+
+    const resultCountSpan =
+        document.getElementById('resultCount');
+
     if (resultCountSpan) {
-        resultCountSpan.textContent = `${count} found`;
+
+        resultCountSpan.textContent =
+            `${count} found`;
     }
-    
+
     if (!resultsGrid) return;
-    
-    if (results.length === 0) {
+
+    // --------------------------
+    // Empty Result State
+    // --------------------------
+    if (!results || results.length === 0) {
+
         resultsGrid.innerHTML = `
             <div class="empty-state-large">
+
                 <i class="fas fa-search"></i>
+
                 <h3>No results found</h3>
-                <p>Try different search terms or check your spelling</p>
+
+                <p>
+                    Try different keywords
+                    or check spelling
+                </p>
+
                 <div class="example-searches">
-                    <small>Try searching by:</small>
-                    <button class="example-btn" onclick="searchExample('राम')">Hindi name</button>
-                    <button class="example-btn" onclick="searchExample('ZQU')">EPIC number</button>
-                    <button class="example-btn" onclick="searchExample('house:7')">House number</button>
+
+                    <small>Try:</small>
+
+                    <button class="example-btn"
+                        onclick="searchExample('राम')">
+                        Hindi Name
+                    </button>
+
+                    <button class="example-btn"
+                        onclick="searchExample('ZQU')">
+                        EPIC
+                    </button>
+
+                    <button class="example-btn"
+                        onclick="searchExample('house:7')">
+                        House No
+                    </button>
+
                 </div>
+
             </div>
         `;
+
         return;
     }
-    
-    resultsGrid.innerHTML = results.map(voter => `
-        <div class="voter-card" onclick="window.location.href='/voter/${voter.id}'">
+
+    // --------------------------
+    // Render Cards
+    // --------------------------
+    resultsGrid.innerHTML =
+        (results || []).map(voter => `
+
+        <div class="voter-card"
+            onclick="window.location.href='/voter/${voter.id}'">
+
             <div class="voter-card-header">
+
                 <div class="voter-avatar-large">
+
                     <i class="fas fa-user-circle"></i>
+
                 </div>
+
                 <div class="voter-basic-info">
-                    <h4>${escapeHtml(voter.name)}</h4>
+
+                    <h4>
+                        ${searchEscapeHtml(voter.name)}
+                    </h4>
+
                     <p class="voter-location">
-                        <i class="fas fa-map-marker-alt"></i> ${escapeHtml(voter.village || 'N/A')}
+
+                        <i class="fas fa-map-marker-alt"></i>
+
+                        ${searchEscapeHtml(voter.village || 'N/A')}
+
                     </p>
+
                 </div>
+
                 <div class="document-badge">
-                    <i class="fas fa-file-alt"></i> ${voter.doc_count || 0} docs
+
+                    <i class="fas fa-file-alt"></i>
+
+                    ${searchEscapeHtml(voter.doc_count || 0)} docs
+
                 </div>
+
             </div>
-            
+
             <div class="voter-card-details">
+
                 <div class="detail-item">
+
                     <i class="fas fa-id-card"></i>
-                    <span>EPIC: ${escapeHtml(voter.epic || 'N/A')}</span>
+
+                    <span>
+                        EPIC:
+                        ${searchEscapeHtml(voter.epic || 'N/A')}
+                    </span>
+
                 </div>
+
                 <div class="detail-item">
+
                     <i class="fas fa-home"></i>
-                    <span>House: ${escapeHtml(voter.house_no || 'N/A')}</span>
+
+                    <span>
+                        House:
+                        ${searchEscapeHtml(voter.house_no || 'N/A')}
+                    </span>
+
                 </div>
+
                 <div class="detail-item">
+
                     <i class="fas fa-users"></i>
-                    <span>Relation: ${escapeHtml(voter.relation_name || 'N/A')}</span>
+
+                    <span>
+                        Relation:
+                        ${searchEscapeHtml(voter.relation_name || 'N/A')}
+                    </span>
+
                 </div>
+
                 <div class="detail-item">
+
                     <i class="fas fa-venus-mars"></i>
-                    <span>${escapeHtml(voter.gender || 'N/A')}, Age ${voter.age || 'N/A'}</span>
+
+                    <span>
+                        ${searchEscapeHtml(voter.gender || 'N/A')},
+                        Age ${searchEscapeHtml(voter.age || 'N/A')}
+                    </span>
+
                 </div>
+
                 <div class="detail-item">
+
                     <i class="fas fa-phone"></i>
-                    <span>${escapeHtml(voter.mobile || 'N/A')}</span>
+
+                    <span>
+                        ${searchEscapeHtml(voter.mobile || 'N/A')}
+                    </span>
+
                 </div>
+
             </div>
-            
+
             <div class="voter-card-footer">
-                <button class="btn-view" onclick="event.stopPropagation(); window.location.href='/voter/${voter.id}'">
-                    View Full Profile <i class="fas fa-arrow-right"></i>
+
+                <button class="btn-view"
+
+                    onclick="
+                        event.stopPropagation();
+                        window.location.href='/voter/${voter.id}'
+                    ">
+
+                    View Full Profile
+
+                    <i class="fas fa-arrow-right"></i>
+
                 </button>
+
             </div>
+
         </div>
+
     `).join('');
-    
-    // Add animation to new cards
-    const cards = resultsGrid.querySelectorAll('.voter-card');
+
+    // --------------------------
+    // Card Animation
+    // --------------------------
+    const cards =
+        resultsGrid.querySelectorAll('.voter-card');
+
     cards.forEach((card, index) => {
-        card.style.animation = `fadeInUp 0.3s ease ${index * 0.05}s both`;
+
+        card.style.animation =
+            `fadeInUp 0.3s ease ${index * 0.05}s both`;
     });
 }
 
+// ------------------------------
+// Example Search Helper
+// ------------------------------
 function searchExample(query) {
-    const searchInput = document.getElementById('mainSearch');
+
+    const searchInput =
+        document.getElementById('mainSearch');
+
     if (searchInput) {
+
         searchInput.value = query;
+
         performSearch();
     }
 }
 
-// Add fadeInUp animation
+// ------------------------------
+// Dynamic Styles
+// ------------------------------
 const style = document.createElement('style');
+
 style.textContent = `
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+
+@keyframes fadeInUp {
+
+    from {
+        opacity: 0;
+        transform: translateY(20px);
     }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.search-loading {
+    cursor: wait;
+}
+
+.search-loading #mainSearch {
+    opacity: 0.7;
+}
+
+.search-filters {
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.search-filters::-webkit-scrollbar {
+    display: none;
+}
+
 `;
+
 document.head.appendChild(style);
