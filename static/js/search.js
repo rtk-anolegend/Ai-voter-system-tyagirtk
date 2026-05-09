@@ -128,8 +128,7 @@ function initializeSearchPage() {
         });
     }
 
-    // INITIAL
-    resetSearchResults();
+    
 }
 
 // --------------------------------------

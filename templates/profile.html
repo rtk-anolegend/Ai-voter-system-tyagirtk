@@ -179,7 +179,7 @@
             e.preventDefault();
             const formData = new FormData(form);
             
-            const response = await fetch(`/upload_document/${voterId}`, {
+            const response = await fetch(`/upload/${voterId}`, {
                 method: 'POST',
                 body: formData
             });

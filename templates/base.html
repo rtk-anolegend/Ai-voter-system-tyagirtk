@@ -147,26 +147,27 @@ https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css
 
             <!-- MOBILE SEARCH -->
 
-            <div class="sidebar-search">
+         <div class="sidebar-search">
 
-                <div class="search-container">
+    <div class="search-container">
 
-                    <i class="fas fa-search"></i>
+        <i class="fas fa-search"></i>
 
-                    <input
-                        type="text"
-                        id="mobileSearch"
+        <input
+            type="text"
+            id="mobileSearch"
+            placeholder="Quick search..."
+            autocomplete="off"
+        >
 
-                        placeholder="Quick search..."
+        <div
+            id="mobileSuggestions"
+            class="search-suggestions"
+        ></div>
 
-                        autocomplete="off"
+    </div>
 
-                        disabled
-                    >
-
-                </div>
-
-            </div>
+</div>
 
             <!-- NAVIGATION -->
 
@@ -395,27 +396,25 @@ https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css
 
                     <div class="header-search">
 
-                        <div class="search-wrapper">
+    <div class="search-wrapper">
 
-                            <i class="fas fa-search"></i>
+        <i class="fas fa-search"></i>
 
-                            <input
-                                type="text"
-                                id="globalSearch"
+        <input
+            type="text"
+            id="globalSearch"
+            placeholder="Search voters..."
+            autocomplete="off"
+        >
 
-                                placeholder="Search voters..."
+        <div
+            id="desktopSuggestions"
+            class="search-suggestions"
+        ></div>
 
-                                autocomplete="off"
-                            >
+    </div>
 
-                            <div
-                                id="searchSuggestions"
-                                class="search-suggestions"
-                            ></div>
-
-                        </div>
-
-                    </div>
+</div>
 
                     <!-- PROFILE -->
 
@@ -482,9 +481,12 @@ this.src='{{ url_for('static', filename='images/default-avatar.png') }}'
 
                 <h2>Voter Profile</h2>
 
-                <span class="close">
-                    &times;
-                </span>
+                <button
+    type="button"
+    class="close"
+>
+    &times;
+</button>
 
             </div>
 

@@ -1477,3 +1477,82 @@ background: rgba(17,24,39,0.78);
         margin-top:10px;
     }
 }
+.search-wrapper,
+.search-container{
+    position:relative;
+}
+
+.search-suggestions{
+    position:absolute;
+    top:100%;
+    left:0;
+    width:100%;
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:14px;
+    margin-top:8px;
+    z-index:9999;
+    display:none;
+    overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,.4);
+}
+
+.search-suggestions.active{
+    display:block;
+}
+
+.suggestion-item{
+    padding:14px;
+    cursor:pointer;
+    border-bottom:1px solid rgba(255,255,255,.05);
+    transition:.2s ease;
+}
+
+.suggestion-item:hover{
+    background:rgba(255,255,255,.05);
+}
+
+.modal{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.7);
+    z-index:99999;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.modal.active{
+    display:flex;
+}
+
+.modal-content{
+    width:100%;
+    max-width:600px;
+    background:#0f172a;
+    border-radius:22px;
+    overflow:hidden;
+    animation:modalPop .25s ease;
+}
+
+@keyframes modalPop{
+
+    from{
+        opacity:0;
+        transform:scale(.9);
+    }
+
+    to{
+        opacity:1;
+        transform:scale(1);
+    }
+}
+
+.close{
+    background:none;
+    border:none;
+    color:white;
+    font-size:28px;
+    cursor:pointer;
+}

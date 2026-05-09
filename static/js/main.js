@@ -4,11 +4,6 @@
 
 let currentVoterId = null;
 let searchTimeout = null;
-
-// ======================================
-// INITIALIZE
-// ======================================
-
 document.addEventListener('DOMContentLoaded', function () {
 
     initializeMobileMenu();
@@ -69,36 +64,60 @@ function initializeMobileMenu() {
 // ======================================
 
 function initializeModals() {
-
-    const modals =
-        document.querySelectorAll('.modal');
-
-    const closeBtns =
-        document.querySelectorAll('.close');
-
-    closeBtns.forEach(btn => {
-
-        btn.addEventListener('click', function () {
-
+    
+    // CLOSE BUTTON
+    document.querySelectorAll('.close').forEach(btn => {
+        
+        btn.addEventListener('click', function(e) {
+            
+            e.preventDefault();
+            
+            e.stopPropagation();
+            
             const modal =
                 this.closest('.modal');
-
+            
             if (modal) {
-
+                
                 modal.style.display = 'none';
+                
+                modal.classList.remove('active');
+                
+                document.body.style.overflow = '';
             }
         });
     });
-
-    window.addEventListener('click', function (event) {
-
-        modals.forEach(modal => {
-
-            if (event.target === modal) {
-
+    
+    // OUTSIDE CLICK
+    document.querySelectorAll('.modal').forEach(modal => {
+        
+        modal.addEventListener('click', function(e) {
+            
+            if (e.target === modal) {
+                
                 modal.style.display = 'none';
+                
+                modal.classList.remove('active');
+                
+                document.body.style.overflow = '';
             }
         });
+    });
+    
+    // ESC CLOSE
+    document.addEventListener('keydown', function(e) {
+        
+        if (e.key === 'Escape') {
+            
+            document.querySelectorAll('.modal').forEach(modal => {
+                
+                modal.style.display = 'none';
+                
+                modal.classList.remove('active');
+            });
+            
+            document.body.style.overflow = '';
+        }
     });
 }
 
@@ -116,12 +135,22 @@ function initializeExportImport() {
 
     if (exportBtn) {
 
-        exportBtn.addEventListener('click', function (e) {
-
-            e.preventDefault();
-
-            showExportOptions();
-        });
+        exportBtn.addEventListener('click', function(e) {
+    
+    e.preventDefault();
+    
+    if (typeof showExportOptions === 'function') {
+        
+        showExportOptions();
+        
+    } else {
+        
+        showNotification(
+            'Export system not available',
+            'error'
+        );
+    }
+});
     }
 
     if (importBtn) {
@@ -168,24 +197,27 @@ function initializeGlobalSearch() {
 
     ];
 
-    const suggestionsDiv =
-        document.getElementById('searchSuggestions');
-
     searchInputs.forEach(searchInput => {
 
         if (!searchInput) return;
 
-        // INPUT SEARCH
+        // SUGGESTIONS TARGET
+        const suggestionsDiv =
+
+            searchInput.id === 'mobileSearch'
+
+            ? document.getElementById('mobileSuggestions')
+
+            : document.getElementById('desktopSuggestions');
+
+        // LIVE SEARCH
         searchInput.addEventListener('input', function () {
 
             const query = this.value.trim();
 
             if (query.length >= 2) {
 
-                if (searchTimeout) {
-
-                    clearTimeout(searchTimeout);
-                }
+                clearTimeout(searchTimeout);
 
                 searchTimeout = setTimeout(() => {
 
@@ -221,25 +253,21 @@ function initializeGlobalSearch() {
                 }
             }
         });
-    });
 
-    // CLOSE DROPDOWN
-    document.addEventListener('click', function (e) {
+        // CLOSE OUTSIDE CLICK
+        document.addEventListener('click', function (e) {
 
-        const wrapper =
-            document.querySelector('.search-wrapper');
+            if (
+                suggestionsDiv &&
+                !suggestionsDiv.contains(e.target) &&
+                !searchInput.contains(e.target)
+            ) {
 
-        if (
-            suggestionsDiv &&
-            wrapper &&
-            !wrapper.contains(e.target)
-        ) {
-
-            suggestionsDiv.classList.remove('active');
-        }
+                suggestionsDiv.classList.remove('active');
+            }
+        });
     });
 }
-
 // ======================================
 // LIVE SEARCH
 // ======================================
@@ -425,10 +453,38 @@ function addLoadingAnimation() {
 
     document.head.appendChild(style);
 }
+function showExportOptions() {
 
+    showNotification(
+        'Export feature coming soon',
+        'info'
+    );
+}
+
+function showImportDialog() {
+
+    const modal =
+        document.getElementById('uploadModal');
+
+    if (modal) {
+
+        modal.style.display = 'flex';
+
+        modal.classList.add('active');
+
+        document.body.style.overflow = 'hidden';
+    }
+}
 function closeModal() {
 
     document
         .querySelectorAll('.modal')
-        .forEach(modal => modal.remove());
+        .forEach(modal => {
+
+            modal.style.display = 'none';
+
+            modal.classList.remove('active');
+        });
+
+    document.body.style.overflow = '';
 }

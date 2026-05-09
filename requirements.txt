@@ -6,3 +6,7 @@ python-dotenv
 Pillow
 openpyxl
 reportlab
+flask-limiter
+pandas
+Werkzeug
+python-magic
