@@ -1,490 +1,419 @@
-// ======================================
-// GLOBAL VARIABLES
-// ======================================
+// ========================================
+// MAIN APPLICATION SCRIPT
+// Professional Voter Management System
+// ========================================
 
-let currentVoterId = null;
-let searchTimeout = null;
-document.addEventListener('DOMContentLoaded', function () {
+let appState = {
+    isInitialized: false,
+    currentPage: 'dashboard',
+    mobileMenuOpen: false,
+    searchCache: {},
+    suggestionsTimeout: null,
+    lastQuery: ''
+};
 
-    initializeMobileMenu();
+let eventListeners = new Map();
 
-    initializeModals();
-
-    initializeExportImport();
-
-    initializeGlobalSearch();
-
-    initializeProfileDropdown();
-
-    addLoadingAnimation();
+document.addEventListener('DOMContentLoaded', function() {
+    initializeApp();
 });
 
-// ======================================
+function initializeApp() {
+    if (appState.isInitialized) return;
+    
+    try {
+        initializeMobileMenu();
+        initializeModals();
+        initializeSearch();
+        initializeProfileDropdown();
+        initializeExportImport();
+        addGlobalErrorHandling();
+        
+        appState.isInitialized = true;
+        console.log('App initialized successfully');
+    } catch (error) {
+        console.error('Initialization error:', error);
+    }
+}
+
+// ========================================
 // MOBILE MENU
-// ======================================
+// ========================================
 
 function initializeMobileMenu() {
-
-    const mobileToggle =
-        document.getElementById('mobileMenuToggle');
-
-    const sidebar =
-        document.getElementById('sidebar');
-
+    const mobileToggle = document.getElementById('mobileMenuToggle');
+    const sidebar = document.getElementById('sidebar');
+    
     if (!mobileToggle || !sidebar) return;
-
-    mobileToggle.addEventListener('click', function (e) {
-
+    
+    // Remove old listeners
+    if (eventListeners.has('mobileToggle')) {
+        const oldListener = eventListeners.get('mobileToggle');
+        mobileToggle.removeEventListener('click', oldListener);
+    }
+    
+    // Add new listener
+    const clickHandler = (e) => {
         e.stopPropagation();
-
         sidebar.classList.toggle('open');
-
-        document.body.classList.toggle('sidebar-open');
-    });
-
-    document.addEventListener('click', function (event) {
-
+        appState.mobileMenuOpen = !appState.mobileMenuOpen;
+    };
+    
+    mobileToggle.addEventListener('click', clickHandler);
+    eventListeners.set('mobileToggle', clickHandler);
+    
+    // Close on outside click
+    document.addEventListener('click', function(event) {
         if (window.innerWidth <= 768) {
-
-            if (
-                !sidebar.contains(event.target) &&
-                !mobileToggle.contains(event.target)
-            ) {
-
+            if (!sidebar.contains(event.target) && !mobileToggle.contains(event.target)) {
                 sidebar.classList.remove('open');
-
-                document.body.classList.remove('sidebar-open');
+                appState.mobileMenuOpen = false;
             }
         }
     });
 }
 
-// ======================================
+// ========================================
 // MODALS
-// ======================================
+// ========================================
 
 function initializeModals() {
-    
-    // CLOSE BUTTON
-    document.querySelectorAll('.close').forEach(btn => {
+    // Close buttons
+    document.querySelectorAll('.modal .close').forEach(btn => {
+        if (eventListeners.has(btn)) {
+            btn.removeEventListener('click', eventListeners.get(btn));
+        }
         
-        btn.addEventListener('click', function(e) {
-            
+        const closeHandler = (e) => {
             e.preventDefault();
-            
             e.stopPropagation();
-            
-            const modal =
-                this.closest('.modal');
-            
+            const modal = btn.closest('.modal');
             if (modal) {
-                
-                modal.style.display = 'none';
-                
-                modal.classList.remove('active');
-                
-                document.body.style.overflow = '';
+                closeModal(modal);
             }
-        });
+        };
+        
+        btn.addEventListener('click', closeHandler);
+        eventListeners.set(btn, closeHandler);
     });
     
-    // OUTSIDE CLICK
+    // Outside click to close
     document.querySelectorAll('.modal').forEach(modal => {
+        if (eventListeners.has(modal)) {
+            modal.removeEventListener('click', eventListeners.get(modal));
+        }
         
-        modal.addEventListener('click', function(e) {
-            
+        const outsideHandler = (e) => {
             if (e.target === modal) {
-                
-                modal.style.display = 'none';
-                
-                modal.classList.remove('active');
-                
-                document.body.style.overflow = '';
+                closeModal(modal);
             }
-        });
+        };
+        
+        modal.addEventListener('click', outsideHandler);
+        eventListeners.set(modal, outsideHandler);
     });
     
-    // ESC CLOSE
-    document.addEventListener('keydown', function(e) {
-        
+    // ESC key to close
+    document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            
-            document.querySelectorAll('.modal').forEach(modal => {
-                
-                modal.style.display = 'none';
-                
-                modal.classList.remove('active');
+            document.querySelectorAll('.modal.active').forEach(modal => {
+                closeModal(modal);
             });
-            
-            document.body.style.overflow = '';
         }
     });
 }
 
-// ======================================
-// EXPORT IMPORT
-// ======================================
+function closeModal(modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+}
 
-function initializeExportImport() {
-
-    const exportBtn =
-        document.getElementById('exportBtn');
-
-    const importBtn =
-        document.getElementById('importBtn');
-
-    if (exportBtn) {
-
-        exportBtn.addEventListener('click', function(e) {
-    
-    e.preventDefault();
-    
-    if (typeof showExportOptions === 'function') {
-        
-        showExportOptions();
-        
-    } else {
-        
-        showNotification(
-            'Export system not available',
-            'error'
-        );
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('active');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
     }
-});
+}
+
+// ========================================
+// GLOBAL SEARCH
+// ========================================
+
+function initializeSearch() {
+    // Sidebar search
+    const sidebarSearch = document.querySelector('.sidebar-search input');
+    if (sidebarSearch && !eventListeners.has('sidebarSearch')) {
+        const sidebarSearchHandler = (e) => {
+            const query = e.target.value.trim();
+            if (query.length >= 2) {
+                performLiveSearch(query, 'sidebar');
+            }
+        };
+        sidebarSearch.addEventListener('input', sidebarSearchHandler);
+        eventListeners.set('sidebarSearch', sidebarSearchHandler);
     }
-
-    if (importBtn) {
-
-        importBtn.addEventListener('click', function (e) {
-
-            e.preventDefault();
-
-            showImportDialog();
+    
+    // Header search
+    const headerSearch = document.querySelector('.search-wrapper input');
+    if (headerSearch && !eventListeners.has('headerSearch')) {
+        const headerSearchHandler = (e) => {
+            const query = e.target.value.trim();
+            if (query.length >= 2) {
+                performLiveSearch(query, 'header');
+            } else {
+                hideSuggestions();
+            }
+        };
+        headerSearch.addEventListener('input', debounce(headerSearchHandler, 200));
+        eventListeners.set('headerSearch', headerSearchHandler);
+        
+        // Enter key
+        headerSearch.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const query = headerSearch.value.trim();
+                if (query.length >= 2) {
+                    window.location.href = `/search?q=${encodeURIComponent(query)}`;
+                }
+            }
         });
     }
 }
 
-// ======================================
-// PROFILE
-// ======================================
+function performLiveSearch(query, source = 'header') {
+    if (!query || query.length < 2) {
+        hideSuggestions();
+        return;
+    }
+    
+    // Check cache
+    const cacheKey = `${source}_${query}`;
+    if (appState.searchCache[cacheKey]) {
+        displaySuggestions(appState.searchCache[cacheKey], source);
+        return;
+    }
+    
+    // Clear previous timeout
+    if (appState.suggestionsTimeout) {
+        clearTimeout(appState.suggestionsTimeout);
+    }
+    
+    appState.suggestionsTimeout = setTimeout(() => {
+        fetchSuggestions(query, source);
+    }, 200);
+}
+
+async function fetchSuggestions(query, source = 'header') {
+    try {
+        const response = await fetch(`/api/suggestions?q=${encodeURIComponent(query)}&limit=8`);
+        if (!response.ok) throw new Error('Failed to fetch suggestions');
+        
+        const data = await response.json();
+        const suggestions = data.suggestions || [];
+        
+        // Cache results
+        const cacheKey = `${source}_${query}`;
+        appState.searchCache[cacheKey] = suggestions;
+        
+        displaySuggestions(suggestions, source);
+    } catch (error) {
+        console.error('Suggestions error:', error);
+    }
+}
+
+function displaySuggestions(suggestions, source = 'header') {
+    const wrapper = document.querySelector('.search-wrapper');
+    if (!wrapper) return;
+    
+    let suggestionsBox = wrapper.querySelector('.search-suggestions');
+    if (!suggestionsBox) {
+        suggestionsBox = document.createElement('div');
+        suggestionsBox.className = 'search-suggestions';
+        wrapper.appendChild(suggestionsBox);
+    }
+    
+    if (suggestions.length === 0) {
+        suggestionsBox.innerHTML = '<div class="search-suggestion-item">No results found</div>';
+        suggestionsBox.classList.add('active');
+        return;
+    }
+    
+    suggestionsBox.innerHTML = suggestions.map((item, index) => `
+        <div class="search-suggestion-item" onclick="goToVoter(${item.id})">
+            <div class="suggestion-name">${escapeHtml(item.name)}</div>
+            <div class="suggestion-meta">
+                ${item.epic ? 'EPIC: ' + escapeHtml(item.epic) : ''}
+                ${item.house_no ? ' | House: ' + escapeHtml(item.house_no) : ''}
+            </div>
+        </div>
+    `).join('');
+    
+    suggestionsBox.classList.add('active');
+}
+
+function hideSuggestions() {
+    const suggestionsBox = document.querySelector('.search-suggestions');
+    if (suggestionsBox) {
+        suggestionsBox.classList.remove('active');
+    }
+}
+
+function goToVoter(voterId) {
+    window.location.href = `/voter/${voterId}`;
+}
+
+// ========================================
+// PROFILE DROPDOWN
+// ========================================
 
 function initializeProfileDropdown() {
-
-    const dropdown =
-        document.querySelector('.profile-dropdown');
-
-    if (!dropdown) return;
-
-    dropdown.addEventListener('click', function () {
-
-        showNotification(
-            'Admin Panel Active',
-            'info'
-        );
+    const profileDropdown = document.querySelector('.profile-dropdown');
+    const dropdownMenu = document.querySelector('.dropdown-menu');
+    
+    if (!profileDropdown || !dropdownMenu) return;
+    
+    if (eventListeners.has('profileDropdown')) {
+        profileDropdown.removeEventListener('click', eventListeners.get('profileDropdown'));
+    }
+    
+    const toggleHandler = (e) => {
+        e.stopPropagation();
+        dropdownMenu.classList.toggle('active');
+    };
+    
+    profileDropdown.addEventListener('click', toggleHandler);
+    eventListeners.set('profileDropdown', toggleHandler);
+    
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+        if (!profileDropdown.contains(e.target) && !dropdownMenu.contains(e.target)) {
+            dropdownMenu.classList.remove('active');
+        }
     });
 }
 
-// ======================================
-// GLOBAL SEARCH
-// ======================================
+// ========================================
+// EXPORT/IMPORT
+// ========================================
 
-function initializeGlobalSearch() {
-
-    const searchInputs = [
-
-        document.getElementById('globalSearch'),
-        document.getElementById('mobileSearch')
-
-    ];
-
-    searchInputs.forEach(searchInput => {
-
-        if (!searchInput) return;
-
-        // SUGGESTIONS TARGET
-        const suggestionsDiv =
-
-            searchInput.id === 'mobileSearch'
-
-            ? document.getElementById('mobileSuggestions')
-
-            : document.getElementById('desktopSuggestions');
-
-        // LIVE SEARCH
-        searchInput.addEventListener('input', function () {
-
-            const query = this.value.trim();
-
-            if (query.length >= 2) {
-
-                clearTimeout(searchTimeout);
-
-                searchTimeout = setTimeout(() => {
-
-                    performLiveSearch(
-                        query,
-                        suggestionsDiv
-                    );
-
-                }, 300);
-
-            } else {
-
-                if (suggestionsDiv) {
-
-                    suggestionsDiv.classList.remove('active');
-
-                    suggestionsDiv.innerHTML = '';
+function initializeExportImport() {
+    const importForm = document.getElementById('importForm');
+    if (importForm && !eventListeners.has('importForm')) {
+        const submitHandler = async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('csvFile');
+            
+            if (!fileInput.files.length) {
+                showNotification('Please select a file', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('csv_file', fileInput.files[0]);
+            
+            try {
+                const response = await fetch('/import/csv', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    showNotification(`Imported ${data.imported} voters successfully`, 'success');
+                    fileInput.value = '';
+                    closeModal(importForm.closest('.modal'));
+                } else {
+                    showNotification(data.error || 'Import failed', 'error');
                 }
+            } catch (error) {
+                console.error('Import error:', error);
+                showNotification('Import error: ' + error.message, 'error');
             }
-        });
-
-        // ENTER SEARCH
-        searchInput.addEventListener('keypress', function (e) {
-
-            if (e.key === 'Enter') {
-
-                const query = this.value.trim();
-
-                if (query) {
-
-                    window.location.href =
-                        `/search?q=${encodeURIComponent(query)}`;
-                }
-            }
-        });
-
-        // CLOSE OUTSIDE CLICK
-        document.addEventListener('click', function (e) {
-
-            if (
-                suggestionsDiv &&
-                !suggestionsDiv.contains(e.target) &&
-                !searchInput.contains(e.target)
-            ) {
-
-                suggestionsDiv.classList.remove('active');
-            }
-        });
-    });
-}
-// ======================================
-// LIVE SEARCH
-// ======================================
-
-async function performLiveSearch(query, suggestionsDiv) {
-
-    if (!suggestionsDiv) return;
-
-    try {
-
-        const response = await fetch(
-            `/api/search?q=${encodeURIComponent(query)}`
-        );
-
-        if (!response.ok) {
-
-            throw new Error('Request failed');
-        }
-
-        const data = await response.json();
-
-        if (data.results && data.results.length > 0) {
-
-            suggestionsDiv.innerHTML = `
-
-                <div class="suggestions-list">
-
-                    ${data.results.slice(0, 5).map(voter => `
-
-                        <div class="suggestion-item"
-
-                            onclick="
-                                window.location.href='/voter/${voter.id}'
-                            ">
-
-                            <i class="fas fa-user"></i>
-
-                            <div>
-
-                                <strong>
-                                    ${escapeHtml(voter.name)}
-                                </strong>
-
-                                <small>
-
-                                    ${escapeHtml(voter.house_no || 'No house')}
-                                    |
-                                    EPIC:
-                                    ${escapeHtml(voter.epic || 'N/A')}
-
-                                </small>
-
-                            </div>
-
-                        </div>
-
-                    `).join('')}
-
-                </div>
-            `;
-
-            suggestionsDiv.classList.add('active');
-
-        } else {
-
-            suggestionsDiv.innerHTML = `
-
-                <div class="suggestions-list">
-
-                    <div class="no-results">
-
-                        No results found
-
-                    </div>
-
-                </div>
-            `;
-
-            suggestionsDiv.classList.add('active');
-        }
-
-    } catch (error) {
-
-        console.error('Search error:', error);
+        };
+        
+        importForm.addEventListener('submit', submitHandler);
+        eventListeners.set('importForm', submitHandler);
     }
 }
 
-// ======================================
-// HELPERS
-// ======================================
+function exportData(format) {
+    window.location.href = `/export/${format}`;
+}
+
+// ========================================
+// UTILITIES
+// ========================================
+
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 function showNotification(message, type = 'info') {
-
-    const notification =
-        document.createElement('div');
-
-    notification.className =
-        `notification notification-${type}`;
-
-    notification.innerHTML = `
-
-        <span>${message}</span>
-    `;
-
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
     notification.style.cssText = `
         position: fixed;
         bottom: 20px;
         right: 20px;
-        background: #111827;
+        padding: 16px 24px;
+        background: ${type === 'success' ? '#00c853' : type === 'error' ? '#f44336' : '#2196f3'};
         color: white;
-        padding: 12px 18px;
-        border-radius: 10px;
-        z-index: 10000;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 9999;
+        animation: slideUp 0.3s;
     `;
-
+    
     document.body.appendChild(notification);
-
+    
     setTimeout(() => {
-
-        notification.remove();
-
-    }, 2500);
+        notification.style.animation = 'slideDown 0.3s';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 }
 
-function escapeHtml(text) {
-
-    if (text === null || text === undefined) {
-
-        return '';
-    }
-
-    const div =
-        document.createElement('div');
-
-    div.textContent =
-        String(text);
-
-    return div.innerHTML;
+function addGlobalErrorHandling() {
+    window.addEventListener('error', (event) => {
+        console.error('Global error:', event.error);
+        showNotification('An error occurred. Please refresh the page.', 'error');
+    });
+    
+    window.addEventListener('unhandledrejection', (event) => {
+        console.error('Unhandled rejection:', event.reason);
+        showNotification('An error occurred. Please try again.', 'error');
+    });
 }
 
-function addLoadingAnimation() {
+// ========================================
+// HELPER FUNCTIONS
+// ========================================
 
-    const style =
-        document.createElement('style');
-
-    style.textContent = `
-
-        body.sidebar-open{
-            overflow:hidden;
-        }
-
-        .loader{
-            width:50px;
-            height:50px;
-            border:3px solid rgba(255,255,255,0.2);
-            border-top-color:#14b8a6;
-            border-radius:50%;
-            animation:spin 1s linear infinite;
-        }
-
-        @keyframes spin{
-            to{
-                transform:rotate(360deg);
-            }
-        }
-
-        .search-suggestions.active{
-            display:block;
-        }
-
-        @media(max-width:768px){
-
-            .sidebar{
-                left:-100%;
-                transition:0.3s ease;
-            }
-
-            .sidebar.open{
-                left:0;
-            }
-        }
-    `;
-
-    document.head.appendChild(style);
-}
-function showExportOptions() {
-
-    showNotification(
-        'Export feature coming soon',
-        'info'
-    );
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
 }
 
-function showImportDialog() {
-
-    const modal =
-        document.getElementById('uploadModal');
-
-    if (modal) {
-
-        modal.style.display = 'flex';
-
-        modal.classList.add('active');
-
-        document.body.style.overflow = 'hidden';
-    }
-}
-function closeModal() {
-
-    document
-        .querySelectorAll('.modal')
-        .forEach(modal => {
-
-            modal.style.display = 'none';
-
-            modal.classList.remove('active');
-        });
-
-    document.body.style.overflow = '';
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification('Copied to clipboard', 'success');
+    }).catch(err => {
+        showNotification('Failed to copy', 'error');
+    });
 }

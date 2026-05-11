@@ -1,0 +1,22 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.db-journal
+.DS_Store
+
+# Backup files
+*_backup.py
+*_old.py
+
+# Cache
+.pytest_cache/
+
+# Uploads
+uploads/
+
+# Logs
+*.log
+*_old.*
+*backup*
+*.pyc

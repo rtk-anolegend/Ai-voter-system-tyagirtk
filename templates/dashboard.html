@@ -2,490 +2,91 @@
 
 {% block title %}Dashboard - Village Intelligence Portal{% endblock %}
 
-{% block header_title %}Dashboard{% endblock %}
-{% block breadcrumb %}Village Intelligence Overview{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block breadcrumb %}<a href="{{ url_for('dashboard') }}">Home</a> / <span>Overview</span>{% endblock %}
 
 {% block content %}
-
-<div class="dashboard">
-
-    <!-- PREMIUM HERO SECTION -->
-
-    <div class="village-dashboard-banner">
-
-        <div class="banner-left">
-
-            <h2>
-                <i class="fas fa-satellite-dish"></i>
-                Village Intelligence Control Center
-            </h2>
-
-            <p>
-                AI-powered rural voter intelligence, family mapping, document management and smart analytics system for BABURA RAGHUNATH SINGH village network.
-            </p>
-
-        </div>
-
-        <div class="banner-right">
-
-            <div class="live-badge">
-                <span class="pulse-dot"></span>
-                SYSTEM ONLINE
-            </div>
-
-        </div>
-
+<div class="page-actions" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px;">
+    <button class="btn btn-primary" type="button" onclick="openModal('importModal')">
+        <i class="fas fa-file-import"></i> Import Voters
+    </button>
+    <button class="btn btn-secondary" type="button" onclick="exportData('csv')">
+        <i class="fas fa-file-csv"></i> Export CSV
+    </button>
+    <button class="btn btn-secondary" type="button" onclick="exportData('excel')">
+        <i class="fas fa-file-excel"></i> Export Excel
+    </button>
+</div>
+<!-- Statistics Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div class="stat-value">{{ stats.total_voters|default(0) }}</div>
+        <div class="stat-label">Total Voters</div>
     </div>
-
-    <!-- QUICK INFO BAR -->
-
-    <div class="quick-info-grid">
-
-        <div class="quick-info-card">
-            <i class="fas fa-server"></i>
-            <div>
-                <strong>Raspberry Pi Server</strong>
-                <small>Connected & Running</small>
-            </div>
-        </div>
-
-        <div class="quick-info-card">
-            <i class="fas fa-network-wired"></i>
-            <div>
-                <strong>Village Network</strong>
-                <small>Local Intelligence Mode</small>
-            </div>
-        </div>
-
-        <div class="quick-info-card">
-            <i class="fas fa-user-shield"></i>
-            <div>
-                <strong>Admin Access</strong>
-                <small>Ritik Singh</small>
-            </div>
-        </div>
-
-        <div class="quick-info-card">
-            <i class="fas fa-phone-volume"></i>
-            <div>
-                <strong>Support Contact</strong>
-                <small>8953698232</small>
-            </div>
-        </div>
-
+    
+    <div class="stat-card">
+        <div class="stat-icon" style="color: #4CAF50; background: rgba(76, 175, 80, 0.15);"><i class="fas fa-mars"></i></div>
+        <div class="stat-value">{{ stats.male_count|default(0) }}</div>
+        <div class="stat-label">Male Voters</div>
     </div>
-
-    <!-- STATS GRID -->
-
-    <div class="stats-grid">
-
-        <div class="stat-card">
-            <div class="stat-icon">
-                <i class="fas fa-users"></i>
-            </div>
-
-            <div class="stat-info">
-                <h3>Total Voters</h3>
-
-                <div class="stat-value">
-                    {{ stats.total_voters }}
-                </div>
-
-                <div class="stat-trend positive">
-                    <i class="fas fa-arrow-up"></i>
-                    Active Database
-                </div>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon male">
-                <i class="fas fa-mars"></i>
-            </div>
-
-            <div class="stat-info">
-                <h3>Male Voters</h3>
-
-                <div class="stat-value">
-                    {{ stats.male_count }}
-                </div>
-
-                <div class="stat-percent">
-                    {% if stats.total_voters > 0 %}
-                        {{ (stats.male_count / stats.total_voters * 100) | round(1) }}%
-                    {% else %}
-                        0%
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon female">
-                <i class="fas fa-venus"></i>
-            </div>
-
-            <div class="stat-info">
-                <h3>Female Voters</h3>
-
-                <div class="stat-value">
-                    {{ stats.female_count }}
-                </div>
-
-                <div class="stat-percent">
-                    {% if stats.total_voters > 0 %}
-                        {{ (stats.female_count / stats.total_voters * 100) | round(1) }}%
-                    {% else %}
-                        0%
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon senior">
-                <i class="fas fa-user-clock"></i>
-            </div>
-
-            <div class="stat-info">
-                <h3>Senior Citizens</h3>
-
-                <div class="stat-value">
-                    {{ stats.senior_count }}
-                </div>
-
-                <div class="stat-label">
-                    Age 60+
-                </div>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon family">
-                <i class="fas fa-home"></i>
-            </div>
-
-            <div class="stat-info">
-                <h3>Families</h3>
-
-                <div class="stat-value">
-                    {{ stats.families_count }}
-                </div>
-
-                <div class="stat-label">
-                    Total Households
-                </div>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon docs">
-                <i class="fas fa-file-alt"></i>
-            </div>
-
-            <div class="stat-info">
-                <h3>Documents</h3>
-
-                <div class="stat-value">
-                    {{ stats.doc_count }}
-                </div>
-
-                <div class="stat-label">
-                    Uploaded Files
-                </div>
-            </div>
-        </div>
-
+    
+    <div class="stat-card">
+        <div class="stat-icon" style="color: #E91E63; background: rgba(233, 30, 99, 0.15);"><i class="fas fa-venus"></i></div>
+        <div class="stat-value">{{ stats.female_count|default(0) }}</div>
+        <div class="stat-label">Female Voters</div>
     </div>
-
-    <!-- CHARTS SECTION -->
-
-    <div class="charts-grid">
-
-        <div class="chart-card">
-
-            <div class="chart-header">
-                <h3>
-                    <i class="fas fa-chart-line"></i>
-                    Age Distribution
-                </h3>
-
-                <span class="chart-tag">
-                    Rural Demographics
-                </span>
-            </div>
-
-            <div class="chart-body">
-                <canvas id="ageChart" width="400" height="300"></canvas>
-            </div>
-
-        </div>
-
-        <div class="chart-card">
-
-            <div class="chart-header">
-                <h3>
-                    <i class="fas fa-chart-pie"></i>
-                    Gender Ratio
-                </h3>
-
-                <span class="chart-tag">
-                    Live Analytics
-                </span>
-            </div>
-
-            <div class="chart-body">
-                <canvas id="genderChart" width="400" height="300"></canvas>
-            </div>
-
-        </div>
-
+    
+    <div class="stat-card">
+        <div class="stat-icon" style="color: #FF9800; background: rgba(255, 152, 0, 0.15);"><i class="fas fa-user-friends"></i></div>
+        <div class="stat-value">{{ stats.families_count|default(0) }}</div>
+        <div class="stat-label">Total Families</div>
     </div>
-
-    <!-- RECENT VOTERS -->
-
-    <div class="recent-section">
-
-        <div class="section-header">
-
-            <h3>
-                <i class="fas fa-clock"></i>
-                Recently Added Voters
-            </h3>
-
-            <a href="{{ url_for('search') }}" class="view-all">
-                View All
-                <i class="fas fa-arrow-right"></i>
-            </a>
-
-        </div>
-
-        <div class="voter-list">
-
-            {% for voter in recent_voters %}
-
-            <div class="voter-list-item"
-                 onclick="showProfile({{ voter.id }})">
-
-                <div class="voter-avatar">
-                    <i class="fas fa-user-circle"></i>
-                </div>
-
-                <div class="voter-info">
-
-                    <div class="voter-name">
-                        {{ voter.name }}
-                    </div>
-
-                    <div class="voter-details">
-
-                        <span>
-                            <i class="fas fa-home"></i>
-                            {{ voter.house_no or 'N/A' }}
-                        </span>
-
-                        <span>
-                            <i class="fas fa-venus-mars"></i>
-                            {{ voter.gender or 'N/A' }}
-                        </span>
-
-                        <span>
-                            <i class="fas fa-calendar"></i>
-                            Age {{ voter.age or 'N/A' }}
-                        </span>
-
-                    </div>
-
-                </div>
-
-                <div class="voter-action">
-                    <i class="fas fa-chevron-right"></i>
-                </div>
-
-            </div>
-
-            {% else %}
-
-            <div class="empty-state">
-
-                <i class="fas fa-database"></i>
-
-                <p>
-                    No voter records available.
-                </p>
-
-                <small>
-                    Import CSV data to initialize the village intelligence system.
-                </small>
-
-            </div>
-
-            {% endfor %}
-
-        </div>
-
+    
+    <div class="stat-card">
+        <div class="stat-icon" style="color: #9C27B0; background: rgba(156, 39, 176, 0.15);"><i class="fas fa-folder-open"></i></div>
+        <div class="stat-value">{{ stats.doc_count|default(0) }}</div>
+        <div class="stat-label">Documents</div>
     </div>
-
+    
+    <div class="stat-card">
+        <div class="stat-icon" style="color: #00BCD4; background: rgba(0, 188, 212, 0.15);"><i class="fas fa-birthday-cake"></i></div>
+        <div class="stat-value">{{ stats.senior_count|default(0) }}</div>
+        <div class="stat-label">Senior Citizens (60+)</div>
+    </div>
 </div>
 
-<!-- CHART JS -->
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-
-    // AGE DISTRIBUTION
-
-    const ageCtx =
-        document.getElementById('ageChart')
-        .getContext('2d');
-
-    const ageData =
-        {{ age_distribution | tojson }};
-
-    new Chart(ageCtx, {
-
-        type: 'bar',
-
-        data: {
-
-            labels:
-                ageData.map(
-                    item => item.age_group
-                ),
-
-            datasets: [{
-
-                label: 'Number of Voters',
-
-                data:
-                    ageData.map(
-                        item => item.count
-                    ),
-
-                backgroundColor:
-                    'rgba(13, 143, 129, 0.8)',
-
-                borderColor:
-                    '#14b8a6',
-
-                borderWidth: 1,
-
-                borderRadius: 12
-
-            }]
-        },
-
-        options: {
-
-            responsive: true,
-
-            maintainAspectRatio: true,
-
-            plugins: {
-
-                legend: {
-
-                    position: 'top',
-
-                    labels: {
-                        color: '#ffffff'
-                    }
-                }
-            },
-
-            scales: {
-
-                x: {
-
-                    ticks: {
-                        color: '#cbd5e1'
-                    },
-
-                    grid: {
-                        color: 'rgba(255,255,255,0.05)'
-                    }
-                },
-
-                y: {
-
-                    ticks: {
-                        color: '#cbd5e1'
-                    },
-
-                    grid: {
-                        color: 'rgba(255,255,255,0.05)'
-                    }
-                }
-            }
-        }
-    });
-
-    // GENDER CHART
-
-    const genderCtx =
-        document.getElementById('genderChart')
-        .getContext('2d');
-
-    const genderData =
-        {{ gender_ratio | tojson }};
-
-    new Chart(genderCtx, {
-
-        type: 'doughnut',
-
-        data: {
-
-            labels:
-                genderData.map(
-                    item => item.gender
-                ),
-
-            datasets: [{
-
-                data:
-                    genderData.map(
-                        item => item.count
-                    ),
-
-                backgroundColor: [
-                    '#2196F3',
-                    '#E91E63',
-                    '#14b8a6'
-                ],
-
-                borderWidth: 0
-            }]
-        },
-
-        options: {
-
-            responsive: true,
-
-            maintainAspectRatio: true,
-
-            plugins: {
-
-                legend: {
-
-                    position: 'bottom',
-
-                    labels: {
-                        color: '#ffffff'
-                    }
-                }
-            }
-        }
-    });
-
-    // PROFILE REDIRECT
-
-    function showProfile(voterId) {
-
-        window.location.href =
-            `/voter/${voterId}`;
-    }
-
-</script>
+<!-- Recent Voters -->
+<h2 style="margin-top: 40px; margin-bottom: 20px; font-size: 20px;">Recent Additions</h2>
+<div class="results-grid">
+    {% if recent_voters %}
+        {% for voter in recent_voters %}
+        <div class="voter-card">
+            <div class="voter-card-header">
+                <div class="voter-card-avatar">{{ voter.name[0]|upper if voter.name else '?' }}</div>
+                <div class="voter-card-name">{{ voter.name }}</div>
+                <div class="voter-card-epic">{{ voter.epic or 'No EPIC' }}</div>
+            </div>
+            <div class="voter-card-body">
+                <div class="voter-card-info">
+                    {% if voter.house_no %}<div class="voter-card-info-item"><span class="voter-card-info-label">House:</span><span>{{ voter.house_no }}</span></div>{% endif %}
+                    {% if voter.age %}<div class="voter-card-info-item"><span class="voter-card-info-label">Age:</span><span>{{ voter.age }}</span></div>{% endif %}
+                    {% if voter.mobile %}<div class="voter-card-info-item"><span class="voter-card-info-label">Mobile:</span><span>{{ voter.mobile }}</span></div>{% endif %}
+                </div>
+            </div>
+            <div class="voter-card-footer">
+                <a href="/voter/{{ voter.id }}" class="btn btn-primary"><i class="fas fa-eye"></i> View</a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+        <i class="fas fa-inbox" style="font-size: 48px; color: var(--text-tertiary); margin-bottom: 20px;"></i>
+        <h3>No voters yet</h3>
+        <p>Import voters from CSV to get started</p>
+    </div>
+    {% endif %}
+</div>
 
 {% endblock %}

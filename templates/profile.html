@@ -1,203 +1,212 @@
 {% extends "base.html" %}
 
-{% block title %}Voter Profile - {{ voter.name }}{% endblock %}
+{% block title %}Voter Profile - Village Intelligence Portal{% endblock %}
 
-{% block header_title %}Voter Profile{% endblock %}
-{% block breadcrumb %}Profile Details{% endblock %}
+{% block page_title %}Voter Profile{% endblock %}
+
+{% block breadcrumb %}<a href="{{ url_for('dashboard') }}">Home</a> / <span>{{ voter.name }}</span>{% endblock %}
 
 {% block content %}
-<div class="profile-container">
-    <div class="profile-grid">
-        <!-- Left Column: Voter Info -->
-        <div class="profile-card">
-            <div class="profile-header">
-                <div class="profile-avatar">
-                    <i class="fas fa-user-circle fa-4x"></i>
-                </div>
-                <div class="profile-title">
-                    <h2>{{ voter.name }}</h2>
-                    <p class="voter-id">EPIC: {{ voter.epic or 'Not Available' }}</p>
-                    <span class="category-badge">{{ voter.category or 'General' }}</span>
-                </div>
-                <div class="profile-actions">
-                    <button class="icon-btn" onclick="editVoter()" title="Edit">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="icon-btn" onclick="openUploadModal({{ voter.id }})" title="Upload Document">
-                        <i class="fas fa-upload"></i>
-                    </button>
-                    <button class="icon-btn" onclick="printProfile()" title="Print">
-                        <i class="fas fa-print"></i>
-                    </button>
-                </div>
+{% if voter %}
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px; margin-bottom: 30px;">
+    <!-- Profile Card -->
+    <div class="stat-card">
+        <div style="text-align: center; padding: 20px 0;">
+            <div style="width: 120px; height: 120px; border-radius: 50%; background: rgba(13, 143, 129, 0.2); display: flex; align-items: center; justify-content: center; font-size: 48px; margin: 0 auto 20px; font-weight: 700; color: var(--primary);">
+                {{ voter.name[0]|upper if voter.name else '?' }}
             </div>
+            <h2 style="font-size: 24px; margin-bottom: 8px;">{{ voter.name }}</h2>
+            <div style="color: var(--text-secondary); margin-bottom: 20px;">{{ voter.name_hindi or 'N/A' }}</div>
+            {% if voter.epic %}
+            <div style="background: rgba(13, 143, 129, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                <small style="color: var(--text-secondary);">EPIC Number</small>
+                <div style="font-weight: 700; color: var(--primary); font-size: 16px;">{{ voter.epic }}</div>
+            </div>
+            {% endif %}
+            <button class="btn btn-primary" style="width: 100%;" onclick="openModal('uploadModal')">
+                <i class="fas fa-upload"></i> Upload Document
+            </button>
+        </div>
+    </div>
+
+    <!-- Details -->
+    <div class="stat-card">
+        <h3 style="margin-bottom: 20px; font-size: 18px;">Personal Information</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            {% if voter.age %}
+            <div>
+                <small style="color: var(--text-secondary);">Age</small>
+                <div style="font-weight: 700; margin-top: 4px;">{{ voter.age }} years</div>
+            </div>
+            {% endif %}
             
-            <div class="profile-details">
-                <div class="detail-section">
-                    <h3><i class="fas fa-id-card"></i> Personal Information</h3>
-                    <div class="detail-grid">
-                        <div class="detail-row">
-                            <span class="label">Serial Number:</span>
-                            <span class="value">{{ voter.serial_no or 'N/A' }}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">Name:</span>
-                            <span class="value">{{ voter.name }}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">Name (Hindi):</span>
-                            <span class="value">{{ voter.name_hindi or 'N/A' }}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">Relation:</span>
-                            <span class="value">{{ voter.relation_type }} of {{ voter.relation_name or 'N/A' }}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">Age:</span>
-                            <span class="value">{{ voter.age or 'N/A' }} years</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">Gender:</span>
-                            <span class="value">{{ voter.gender or 'N/A' }}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">Mobile:</span>
-                            <span class="value">{{ voter.mobile or 'N/A' }}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">Category:</span>
-                            <span class="value">{{ voter.category or 'General' }}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="detail-section">
-                    <h3><i class="fas fa-home"></i> Address Information</h3>
-                    <div class="detail-grid">
-                        <div class="detail-row">
-                            <span class="label">House Number:</span>
-                            <span class="value">{{ voter.house_no or 'N/A' }}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="label">Village:</span>
-                            <span class="value">{{ voter.village or 'N/A' }}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="detail-section">
-                    <h3><i class="fas fa-sticky-note"></i> Notes</h3>
-                    <div class="notes-content">
-                        {{ voter.notes or 'No additional notes available.' }}
-                    </div>
-                </div>
+            {% if voter.gender %}
+            <div>
+                <small style="color: var(--text-secondary);">Gender</small>
+                <div style="font-weight: 700; margin-top: 4px;">{{ voter.gender }}</div>
             </div>
+            {% endif %}
+            
+            {% if voter.house_no %}
+            <div>
+                <small style="color: var(--text-secondary);">House Number</small>
+                <div style="font-weight: 700; margin-top: 4px;">{{ voter.house_no }}</div>
+            </div>
+            {% endif %}
+            
+            {% if voter.mobile %}
+            <div>
+                <small style="color: var(--text-secondary);">Mobile</small>
+                <div style="font-weight: 700; margin-top: 4px;">{{ voter.mobile }}</div>
+            </div>
+            {% endif %}
+            
+            {% if voter.village %}
+            <div>
+                <small style="color: var(--text-secondary);">Village</small>
+                <div style="font-weight: 700; margin-top: 4px;">{{ voter.village }}</div>
+            </div>
+            {% endif %}
+            
+            {% if voter.category %}
+            <div>
+                <small style="color: var(--text-secondary);">Category</small>
+                <div style="font-weight: 700; margin-top: 4px;">{{ voter.category }}</div>
+            </div>
+            {% endif %}
         </div>
         
-        <!-- Right Column: Family & Documents -->
-        <div class="profile-sidebar">
-            <!-- Family Members -->
-            <div class="info-card">
-                <div class="card-header">
-                    <h3><i class="fas fa-users"></i> Family Members</h3>
-                    <span class="badge">{{ family_members|length }} members</span>
-                </div>
-                <div class="family-list">
-                    {% for member in family_members %}
-                    <div class="family-member" onclick="window.location.href='/voter/{{ member.id }}'">
-                        <div class="member-avatar">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="member-info">
-                            <div class="member-name">{{ member.name }}</div>
-                            <div class="member-relation">{{ member.relation_name or 'Head' }}</div>
-                        </div>
-                        <div class="member-arrow">
-                            <i class="fas fa-chevron-right"></i>
-                        </div>
-                    </div>
-                    {% else %}
-                    <div class="empty-state-small">
-                        <i class="fas fa-users"></i>
-                        <p>No family members found</p>
-                    </div>
-                    {% endfor %}
-                </div>
+        {% if voter.relation_name %}
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+            <small style="color: var(--text-secondary);">{{ voter.relation_type or 'Related to' }}</small>
+            <div style="font-weight: 700; margin-top: 4px;">{{ voter.relation_name }}</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Family Members -->
+{% if family_members %}
+<h3 style="margin-bottom: 20px; font-size: 18px;">Family Members ({{ family_members|length }})</h3>
+<div class="results-grid">
+    {% for member in family_members %}
+    <div class="voter-card">
+        <div class="voter-card-header">
+            <div class="voter-card-avatar">{{ member.name[0]|upper if member.name else '?' }}</div>
+            <div class="voter-card-name">{{ member.name }}</div>
+            <div class="voter-card-epic">{{ member.relation_type or 'Family' }}</div>
+        </div>
+        <div class="voter-card-body">
+            <div class="voter-card-info">
+                {% if member.age %}<div class="voter-card-info-item"><span class="voter-card-info-label">Age:</span><span>{{ member.age }}</span></div>{% endif %}
+                {% if member.gender %}<div class="voter-card-info-item"><span class="voter-card-info-label">Gender:</span><span>{{ member.gender }}</span></div>{% endif %}
+                {% if member.epic %}<div class="voter-card-info-item"><span class="voter-card-info-label">EPIC:</span><span>{{ member.epic }}</span></div>{% endif %}
             </div>
-            
-            <!-- Documents -->
-            <div class="info-card">
-                <div class="card-header">
-                    <h3><i class="fas fa-file-alt"></i> Documents</h3>
-                    <button class="btn-small" onclick="openUploadModal({{ voter.id }})">
-                        <i class="fas fa-plus"></i> Add
-                    </button>
+        </div>
+        <div class="voter-card-footer">
+            <a href="/voter/{{ member.id }}" class="btn btn-primary" style="flex: 1;"><i class="fas fa-eye"></i> View</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Documents -->
+{% if documents %}
+<h3 style="margin-bottom: 20px; font-size: 18px; margin-top: 40px;">Documents ({{ documents|length }})</h3>
+<div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 1px solid var(--border);">
+                <th style="text-align: left; padding: 12px; color: var(--text-secondary);">Type</th>
+                <th style="text-align: left; padding: 12px; color: var(--text-secondary);">File</th>
+                <th style="text-align: left; padding: 12px; color: var(--text-secondary);">Date</th>
+                <th style="text-align: center; padding: 12px; color: var(--text-secondary);">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in documents %}
+            <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 12px;">{{ doc.doc_type|upper }}</td>
+                <td style="padding: 12px;">{{ doc.file_path.split('/')[-1] }}</td>
+                <td style="padding: 12px; color: var(--text-secondary);">{{ doc.uploaded_at[:10] }}</td>
+                <td style="padding: 12px; text-align: center;">
+                    <a href="{{ doc.file_path }}" target="_blank" class="btn btn-secondary" style="padding: 6px 12px; font-size: 11px;">
+                        <i class="fas fa-download"></i> View
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 40px; text-align: center; margin-top: 20px;">
+    <i class="fas fa-file" style="font-size: 36px; color: var(--text-tertiary); margin-bottom: 12px;"></i>
+    <p style="color: var(--text-secondary);">No documents uploaded yet</p>
+</div>
+{% endif %}
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Upload Document</h2>
+            <button class="close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form onsubmit="uploadDocument(event, {{ voter.id }})">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Document Type</label>
+                    <select name="doc_type" required style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text-primary);">
+                        <option value="aadhaar">Aadhaar Card</option>
+                        <option value="pan">PAN Card</option>
+                        <option value="ration">Ration Card</option>
+                        <option value="passport">Passport</option>
+                        <option value="other">Other</option>
+                    </select>
                 </div>
-                <div class="document-list">
-                    {% for doc in documents %}
-                    <div class="document-item">
-                        <div class="doc-icon">
-                            <i class="fas fa-file-pdf"></i>
-                        </div>
-                        <div class="doc-info">
-                            <div class="doc-name">{{ doc.doc_type|title }}</div>
-                            <div class="doc-date">{{ doc.uploaded_at[:19] }}</div>
-                        </div>
-                        <div class="doc-actions">
-                            <a href="{{ doc.file_path }}" target="_blank" class="doc-btn">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="{{ doc.file_path }}" download class="doc-btn">
-                                <i class="fas fa-download"></i>
-                            </a>
-                        </div>
-                    </div>
-                    {% else %}
-                    <div class="empty-state-small">
-                        <i class="fas fa-file-alt"></i>
-                        <p>No documents uploaded</p>
-                        <button class="btn-secondary-small" onclick="openUploadModal({{ voter.id }})">
-                            Upload First Document
-                        </button>
-                    </div>
-                    {% endfor %}
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Select File</label>
+                    <input type="file" name="document" required accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text-primary);">
                 </div>
-            </div>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal(document.getElementById('uploadModal'))">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <script>
-    let currentVoterId = {{ voter.id }};
-    
-    function openUploadModal(voterId) {
-        const modal = document.getElementById('uploadModal');
-        modal.style.display = 'block';
-        
-        const form = document.getElementById('uploadForm');
-        form.onsubmit = async (e) => {
-            e.preventDefault();
-            const formData = new FormData(form);
-            
-            const response = await fetch(`/upload/${voterId}`, {
-                method: 'POST',
-                body: formData
-            });
-            
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert('Upload failed');
-            }
-        };
-    }
-    
-    function editVoter() {
-        alert('Edit functionality would open here');
-    }
-    
-    function printProfile() {
-        window.print();
-    }
+function uploadDocument(e, voterId) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    fetch(`/upload/${voterId}`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.success) {
+            showNotification('Document uploaded successfully', 'success');
+            closeModal(document.getElementById('uploadModal'));
+            location.reload();
+        } else {
+            showNotification(d.error || 'Upload failed', 'error');
+        }
+    })
+    .catch(e => showNotification('Upload error: ' + e.message, 'error'));
+}
 </script>
+
+{% else %}
+<div class="empty-state">
+    <i class="fas fa-user-slash"></i>
+    <h3>Voter Not Found</h3>
+    <p><a href="{{ url_for('search') }}">Back to Search</a></p>
+</div>
+{% endif %}
+
 {% endblock %}

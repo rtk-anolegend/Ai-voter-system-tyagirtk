@@ -1,24 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="
-            width=device-width,
-            initial-scale=1.0,
-            viewport-fit=cover
-        "
-    >
-
-    <title>
-        {% block title %}
-        Village Intelligence Portal
-        {% endblock %}
-    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>{% block title %}Village Intelligence Portal{% endblock %}</title>
 
     <meta
         name="description"
@@ -32,6 +17,8 @@
         name="theme-color"
         content="#020617"
     >
+
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
 
     <link
         rel="preconnect"
@@ -601,6 +588,32 @@ this.src='{{ url_for('static', filename='images/default-avatar.png') }}'
 
         </div>
 
+    </div>
+
+    <!-- IMPORT VOTERS MODAL -->
+
+    <div
+        id="importModal"
+        class="modal"
+    >
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h2>Import Voters</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="importForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>Select CSV or Excel file</label>
+                        <input type="file" id="csvFile" name="csv_file" accept=".csv,.xlsx" required style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--text-primary);">
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;gap:12px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal(document.getElementById('importModal'))">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Import</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- MAIN JS -->

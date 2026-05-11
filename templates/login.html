@@ -426,6 +426,35 @@
             color:var(--primary);
         }
 
+        .login-footer{
+            margin-top: 28px;
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-text{
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .footer-note{
+            color: #94a3b8;
+            font-size: 12px;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .footer-note strong{
+            color: var(--primary);
+            font-weight: 600;
+        }
+
         /* Mobile Responsive */
 
         @media (max-width:768px){
@@ -526,11 +555,8 @@
 
             </div>
 
-            <!--
-            Uncomment for Flask Server
-
+            <!-- Error message display -->
             {% if error %}
-
             <div class="error-message">
 
                 <i class="fas fa-exclamation-triangle"></i>
@@ -538,9 +564,7 @@
                 {{ error }}
 
             </div>
-
             {% endif %}
-            -->
 
             <form method="POST">
 
@@ -622,6 +646,17 @@
 
             </div>
 
+        </div>
+
+        <!-- Professional Footer -->
+        <div class="login-footer">
+            <p class="footer-text">
+                <i class="fas fa-lock"></i>
+                Secure • Local Network Only • Session-Based Authentication
+            </p>
+            <p class="footer-note">
+                First-time login: <strong>admin</strong> / <strong>TyagiVoter</strong>
+            </p>
         </div>
 
     </div>
